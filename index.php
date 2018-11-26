@@ -1,3 +1,41 @@
+<?php
+    header('Content-Type: text/html; charset=utf-8');
+    require 'config/configDB.php';
+    session_start();
+    $_SESSION['USARIO']= "";
+
+    $conexao =fazerConexao();
+
+    $login = $senha = $erros="" ;
+    if($_SERVER["REQUEST_METHOD"]=="POST"){
+        $login = $_POST["login"];
+        $senha = $_POST["senha"];
+
+        if(empty($login) || empty($senha)){
+            $erros ="Precisa preencher todos os campos!";
+        }else{
+            $sql = "SELECT id_usuario,login,senha,nome FROM tbl_usuario WHERE login ='".$login."' and senha ='".$senha."';";
+    
+            $result = $conexao->query($sql);
+        
+            if($result->num_rows>0){
+                while($linha = $result->fetch_assoc()) {
+                    $_SESSION['USARIO'] = $linha['nome'];
+                    $_SESSION['IDUSUARIO'] = $linha['id_usuario'];
+                }
+                $conexao->close();
+                header("Location:view/home.php");
+            }else{
+                $erros="Usuario não cadastrado";
+            }
+            $conexao->close();
+            
+
+        }
+    }
+    
+
+?>
 <!doctype html>
 <html lang="br">
   <head>
@@ -23,6 +61,9 @@
             padding:0;
             margin-bottom:8%;
         }
+        .erro{
+            color:red;
+        }
     </style>
 
   </head>
@@ -30,16 +71,17 @@
     <div class="container container-login">
         <h3 class="card-title negrito">Help Desk MIP</h3>
         <p class="letra-pequena card-title">Portal do cliente</p>
-        <form action="view/home.php">
+        <form action="index.php" method="POST">
             <div class="form-group">
                 <label class="negrito">Login</label>
-                <input type="text" class="form-control" name="login"  placeholder="Login">
+                <input type="text" class="form-control" name="login" value="<?php echo($login)?>" placeholder="Login" requared>
             </div>
             <div class="form-group">
                 <label class="negrito">Senha</label>
-                <input type="password" class="form-control" name="senha" placeholder="Senha">
+                <input type="password" class="form-control" name="senha" value="<?php echo($senha)?>" placeholder="Senha" requared>
             </div>
             <button type="submit" class="btn btn-primary">Entrar</button>
+            <p class="erro"><?php echo($erros);?></p>
         </form>
     </div>
     <!-- Optional JavaScript -->

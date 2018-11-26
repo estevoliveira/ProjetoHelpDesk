@@ -1,8 +1,36 @@
+<?php
+    header('Content-Type: text/html; charset=utf-8');
+    require '../config/configDB.php';
+    session_start();
+
+    $conexao =fazerConexao();
+
+    $tipoProblema = $descricao = $contato= $erro="";
+
+    $sqlTipoProblema = "SELECT * FROM tbl_problema order by id_problema;";
+    $resultTipoProblema = $conexao->query($sqlTipoProblema);
+
+    
+    if($_SERVER["REQUEST_METHOD"]=="POST"){
+        
+        $tipoProblema = $_POST["tipo-problema"];
+        $descricao = $_POST["descricao"];
+        $contato = $_POST["contato"];
+
+        if(empty($descricao) || empty($contato)){
+
+        }else{
+            $erro = "Preencha o campos!";
+        }
+
+    
+    }
+?>
 <!doctype html>
 <html lang="br">
   <head>
     <!-- Required meta tags -->
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
@@ -26,12 +54,15 @@
         .titulo-pagina{
             margin-bottom:30px;
         }
+        .erro{
+            color:red;
+        }
     </style>
 
   </head>
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <span class="navbar-brand">Bem vindo carlos!</span>
+        <span class="navbar-brand">Bem vindo <?php echo($_SESSION['USARIO'])?>!</span>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -52,22 +83,30 @@
     </nav> 
     <div class="container container-home">
         <h3 class="card-title titulo-pagina">Abrir chamado</h3>
-        <form action="home.php">
+        <form action="abrir_problema.php" method="POST">
             <div class="form-group">
                 <label>Tipo de problema</label>
-                <select class="form-control">
-                <option>Intalação</option>
-                <option>2</option>
-                <option>3</option>
-                <option>4</option>
-                <option>5</option>
+                <select class="form-control" name="tipo-problema">
+                    <?php
+                        if($resultTipoProblema->num_rows>0){
+                            while($linha = $resultTipoProblema->fetch_assoc()){  
+                        
+                    ?>
+                    <option value="<?php echo($linha['id_problema']);?>" selected><?php echo($linha['descricao_problema']);?></option>
+                    <?php   }}?>
                 </select>
             </div>
             <div class="form-group">
                 <label>Descrição</label>
-                <textarea class="form-control" rows="6"></textarea>
+                <textarea class="form-control" rows="6" name="descricao"></textarea>
             </div>
+            <div class="form-group">
+                <label>Contato</label>
+                <input type="text" class="form-control" name="contato">
+            </div>
+            <p class="erro"><?php echo($erro);?></p>
             <button type="submit" class="btn btn-primary">Realizar chamado</button>
+            <!--Realizar chamado-->
         </form>
     </div>
     <!-- Optional JavaScript -->
