@@ -2,15 +2,31 @@
     header('Content-Type: text/html; charset=utf-8');
     require '../config/configDB.php';
     session_start();
+    $_SESSION['TIPOFUNCAO']="Abrir";
+    $_SESSION['IDEDITAR']="";
 
     $conexao =fazerConexao();
-
+   
     $sql = "SELECT * FROM view_chamados_web where id_usuario=".$_SESSION['IDUSUARIO']." order by id_chamados;";
     $result = $conexao->query($sql);
 
-    //if($_SERVER["REQUEST_METHOD"]=="POST"){
-
-    //}
+    if($_SERVER["REQUEST_METHOD"]=="POST"){
+        if(!empty($_POST['cancelar'])){
+            $sqlCancelar="DELETE FROM tbl_listachamados WHERE id_chamados =".$_POST['cancelar']." and id_usuario_afetado =".$_SESSION['IDUSUARIO'].";";
+            if($conexao->query($sqlCancelar)===true){
+                header("Location:home.php");
+            }else{
+                echo($sqlCancelar);
+                echo($conexao->error);
+            }
+        }elseif(!empty($_POST['editar'])){
+           // echo('editar');
+           // echo($_POST['editar']);
+            $_SESSION['TIPOFUNCAO']= "Editar";
+            $_SESSION['IDEDITAR']= $_POST['editar'];
+            header("Location:abrir_problema.php");
+        }
+    }
 ?>
 <!doctype html>
 <html lang="br">
@@ -66,7 +82,7 @@
     </nav> 
     <div class="container container-home">
         <h3 class="card-title titulo-pagina">Lista de chamados</h3>
-        <form action="home.php">
+        <form action="home.php" method="POST">
             <table class="table table-hover">
                 <thead>
                     <tr>
@@ -89,8 +105,8 @@
                         <td><?php echo($linha['Data de abertura'])?></td>
                         <td><?php echo($linha['Status'])?></td>
                         <td>
-                            <button type="submit" class="btn btn-dark">Editar</button>
-                            <button type="submit" class="btn btn-danger">Cancelar</button>
+                            <button type="submit" class="btn btn-dark" name="editar" value="<?php echo($linha['id_chamados'])?>">Editar</button>
+                            <button type="submit" class="btn btn-danger" name="cancelar" value="<?php echo($linha['id_chamados'])?>">Cancelar</button>
                         </td>
                     </tr>
                     <?php }}?>

@@ -2,6 +2,7 @@
     header('Content-Type: text/html; charset=utf-8');
     require '../config/configDB.php';
     session_start();
+    date_default_timezone_set('America/Sao_Paulo');
 
     $conexao =fazerConexao();
 
@@ -9,8 +10,24 @@
 
     $sqlTipoProblema = "SELECT * FROM tbl_problema order by id_problema;";
     $resultTipoProblema = $conexao->query($sqlTipoProblema);
+    $titulo = "Abrir";
+    $btnString="Realizar";
 
-    
+    if($_SESSION['TIPOFUNCAO']==="Editar"){
+        echo("vamos editar");
+        $btnString = "Editar";
+        $titulo = "Editar";
+        $sqlEditar ="SELECT descricao_chamado, contato FROM tbl_listachamados where id_chamados =".$_SESSION['IDEDITAR'].";";
+
+        $result = $conexao->query($sqlEditar);
+        if($result->num_rows>0){
+            while($linha = $result->fetch_assoc()){ 
+                $descricao=$linha['descricao_chamado'];
+                $contato=$linha['contato'];
+            }
+        }
+    }
+   
     if($_SERVER["REQUEST_METHOD"]=="POST"){
         
         $tipoProblema = $_POST["tipo-problema"];
@@ -18,12 +35,28 @@
         $contato = $_POST["contato"];
 
         if(empty($descricao) || empty($contato)){
-
+            $erro = "Preencha os campos obrigatórios * !";
         }else{
-            $erro = "Preencha o campos!";
+            $data = date('Y-m-d');
+            $hora = date('H:i:s');
+            if($_SESSION['TIPOFUNCAO']=="Editar"){
+                $sql="UPDATE tbl_listachamados SET id_problema=".$tipoProblema.", descricao_chamado='".$descricao."', contato='".$contato."' WHERE id_chamados=".$_SESSION['IDEDITAR'].";";
+            }else{
+                $sql= "INSERT INTO tbl_listachamados (id_usuario_afetado,id_tecnico,id_problema,descricao_chamado,data_abertura,data_fechamento,status,contato,solucao,id_tecnico_fechou) 
+                    VALUES (".$_SESSION['IDUSUARIO'].",null,".$tipoProblema.",'".$descricao."','".$data." ".$hora."',null,'aberto','".$contato."',null,null)";
+            } 
+            
+            if ($conexao->query($sql) === TRUE) {
+               // unset($_SESSION['TIPOFUNCAO']);
+                //unset($_SESSION['IDEDITAR']);
+                header("Location:home.php");
+            }else{
+                echo($sql);
+                echo($conexao->error);
+            }  
         }
-
-    
+        $conexao->close();
+        
     }
 ?>
 <!doctype html>
@@ -82,7 +115,7 @@
         </div>
     </nav> 
     <div class="container container-home">
-        <h3 class="card-title titulo-pagina">Abrir chamado</h3>
+        <h3 class="card-title titulo-pagina"><?php echo($titulo)?> chamado</h3>
         <form action="abrir_problema.php" method="POST">
             <div class="form-group">
                 <label>Tipo de problema</label>
@@ -97,15 +130,15 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Descrição</label>
-                <textarea class="form-control" rows="6" name="descricao"></textarea>
+                <label>Descrição*</label>
+                <textarea class="form-control" rows="6" name="descricao"><?php echo($descricao);?></textarea>
             </div>
             <div class="form-group">
-                <label>Contato</label>
-                <input type="text" class="form-control" name="contato">
+                <label>Contato*</label>
+                <input type="text" class="form-control" name="contato" value="<?php echo($contato);?>">
             </div>
             <p class="erro"><?php echo($erro);?></p>
-            <button type="submit" class="btn btn-primary">Realizar chamado</button>
+            <button type="submit" class="btn btn-primary"><?php echo($btnString)?> chamado</button>
             <!--Realizar chamado-->
         </form>
     </div>

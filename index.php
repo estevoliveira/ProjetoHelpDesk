@@ -3,6 +3,7 @@
     require 'config/configDB.php';
     session_start();
     $_SESSION['USARIO']= "";
+    $_SESSION['TIPOFUNCAO']="Abrir";
 
     $conexao =fazerConexao();
 
