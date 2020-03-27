@@ -1,4 +1,4 @@
-# ProjetoHelpDes
+# ProjetoHelpDesk
 
 Projeto da Faculdade.
 Precisava desenvolver um painel de helpdesk, então usei PHP, mysql, HTML5, Bootstrap para desenvolver essa aplicação. 
